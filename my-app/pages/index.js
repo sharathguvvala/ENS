@@ -50,6 +50,9 @@ export default function Home() {
         <button onClick={connectWallet} >Connect Wallet</button>
       </main>
 
+      <footer>
+        
+      </footer>
     </div>
   )
 }
