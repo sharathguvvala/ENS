@@ -16,6 +16,7 @@ contract Domains is ERC721URIStorage {
     string public tld;
     mapping(string => address) public domains;
     mapping(string => string) public records;
+    mapping(uint => string) public names;
     address payable public owner;
 
     constructor(string memory _tld)
@@ -40,6 +41,8 @@ contract Domains is ERC721URIStorage {
     function register(string calldata name) public payable {
         uint256 _price = price(name);
         require(msg.value >= _price, "insufficient matic");
+        if (domains[name] != address(0)) revert AlreadyRegistered();
+        if (!valid(name)) revert InvalidName(name);
         string memory _name = string(abi.encodePacked(name, ".", tld));
         string memory finalSvg = string(
             abi.encodePacked(svgPartOne, _name, svgPartTwo)
@@ -64,6 +67,7 @@ contract Domains is ERC721URIStorage {
         _safeMint(msg.sender, newRecordId);
         _setTokenURI(newRecordId, finalTokenUri);
         domains[name] = msg.sender;
+        names[newRecordId] = name;
         tokenIds.increment();
     }
 
@@ -72,7 +76,7 @@ contract Domains is ERC721URIStorage {
     }
 
     function setRecord(string calldata name, string calldata record) public {
-        require(domains[name] == msg.sender, "not the owner of the domain");
+        if (msg.sender != domains[name]) revert Unauthorized();
         records[name] = record;
     }
 
@@ -98,4 +102,22 @@ contract Domains is ERC721URIStorage {
         (bool success, ) = msg.sender.call{value: amount}("");
         require(success, "Failed to withdraw Matic");
     }
+
+    function getAllNames() public view returns (string[] memory) {
+        console.log("Getting all names from contract");
+        string[] memory allNames = new string[](tokenIds.current());
+        for (uint i = 0; i < tokenIds.current(); i++) {
+            allNames[i] = names[i];
+            console.log("Name for token %d is %s", i, allNames[i]);
+        }
+        return allNames;
+    }
+
+    function valid(string calldata name) public pure returns (bool) {
+        return StringUtils.strlen(name) >= 3 && StringUtils.strlen(name) <= 10;
+    }
+
+    error Unauthorized();
+    error AlreadyRegistered();
+    error InvalidName(string name);
 }
