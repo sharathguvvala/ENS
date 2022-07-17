@@ -69,7 +69,7 @@ export default function Home() {
         <input
           type="text"
           value={record}
-          placeholder="whats ur ninja power?"
+          placeholder="whats ur stacex profile?"
           onChange={(e) => setRecord(e.target.value)}
         />
         <div>
