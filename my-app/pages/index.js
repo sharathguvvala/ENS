@@ -4,12 +4,58 @@ import styles from "../styles/Home.module.css";
 import { ethers } from "ethers";
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useProvider, useSigner, useContract } from "wagmi";
+import { ContractABI } from "../constants/index";
 
 const tld = ".stacex";
 
 export default function Home() {
+  const { isConnected } = useAccount();
+  const provider = useProvider();
+  const { data: signer } = useSigner();
   const [domain, setDomain] = useState("");
   const [record, setRecord] = useState("");
+  const contract = useContract({
+    addressOrName: "0xe0242726aBAE75D4E9755Bd1D90E6b2969cFF5c6",
+    contractInterface: ContractABI,
+    signerOrProvider: signer,
+  });
+
+  const mintDomain = async () => {
+    if (!domain) {
+      return;
+    }
+    if (domain.length < 3) {
+      alert("Domain must be at least 3 characters long");
+      return;
+    }
+    const price = domain.length === 3 ? "0.05" : "0.1";
+    console.log("Minting domain", domain, "with price", price);
+    try {
+      if (isConnected) {
+        let tx = await contract.register(domain, {
+          value: ethers.utils.parseEther(price),
+        });
+        const receipt = await tx.wait();
+        if (receipt.status === 1) {
+          console.log(
+            "Domain minted! https://mumbai.polygonscan.com/tx/" + tx.hash
+          );
+          tx = await contract.setRecord(domain, record);
+          await tx.wait();
+          console.log(
+            "Record set! https://mumbai.polygonscan.com/tx/" + tx.hash
+          );
+          setRecord("");
+          setDomain("");
+        } else {
+          alert("Transaction failed! Please try again");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const renderInputForm = () => {
     return (
@@ -27,24 +73,14 @@ export default function Home() {
         <input
           type="text"
           value={record}
-          placeholder="whats ur StacEx3 profile"
+          placeholder="whats ur ninja power?"
           onChange={(e) => setRecord(e.target.value)}
         />
 
         <div className="button-container">
-          <button
-            className="cta-button mint-button"
-            disabled={null}
-            onClick={null}
-          >
+          {/* Call the mintDomain function when the button is clicked*/}
+          <button className="cta-button mint-button" onClick={mintDomain}>
             Mint
-          </button>
-          <button
-            className="cta-button mint-button"
-            disabled={null}
-            onClick={null}
-          >
-            Set data
           </button>
         </div>
       </div>
@@ -61,7 +97,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <ConnectButton />
-        {renderInputForm()}
+        {isConnected && renderInputForm()}
       </main>
 
       <footer></footer>

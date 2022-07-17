@@ -18,3 +18,4 @@ main()
       process.exit(1);
 });
   
+// smart contract address 0xe0242726aBAE75D4E9755Bd1D90E6b2969cFF5c6
