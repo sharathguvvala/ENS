@@ -58,25 +58,21 @@ export default function Home() {
   const renderInputForm = () => {
     return (
       <div>
-        <div>
           <input
             type="text"
             value={domain}
             placeholder="domain.stacex"
             onChange={(e) => setDomain(e.target.value)}
           />
-        </div>
         <input
           type="text"
           value={record}
           placeholder="whats ur stacex profile?"
           onChange={(e) => setRecord(e.target.value)}
         />
-        <div>
           <button onClick={mintDomain}>
             Mint
           </button>
-        </div>
       </div>
     );
   };
@@ -91,7 +87,9 @@ export default function Home() {
 
       <main className={styles.main}>
         <ConnectButton />
-        {isConnected && renderInputForm()}
+        <div>
+        {renderInputForm()}
+        </div>
       </main>
 
       <footer></footer>

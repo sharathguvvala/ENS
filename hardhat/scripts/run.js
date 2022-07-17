@@ -1,5 +1,5 @@
 async function main() {
-  //const [owner, randomUser] = await hre.ethers.getSigners();
+  const [owner, randomUser] = await hre.ethers.getSigners();
   const domainContractFactory = await hre.ethers.getContractFactory("Domains");
   const domainContract = await domainContractFactory.deploy("stacex");
   await domainContract.deployed();
@@ -15,8 +15,22 @@ async function main() {
   await txn.wait();
   const address = await domainContract.getAddress("immortal");
   console.log("owner of domain immortal:", address);
-  const balance = await hre.ethers.provider.getBalance(domainContract.address);
-  console.log("contract balance:", hre.ethers.utils.formatEther(balance));
+  let contractBalance = await hre.ethers.provider.getBalance(domainContract.address);
+  console.log("contract balance:", hre.ethers.utils.formatEther(contractBalance));
+  try {
+    txn = await domainContract.connect(randomUser).withdraw();
+    await txn.wait();
+  } catch(error){
+    console.log("Could not rob contract");
+  }
+  let ownerBalance = await hre.ethers.provider.getBalance(owner.address);
+  console.log("Balance of owner before withdrawal:", hre.ethers.utils.formatEther(ownerBalance));
+  txn = await domainContract.connect(owner).withdraw();
+  await txn.wait();
+  contractBalance = await hre.ethers.provider.getBalance(domainContract.address);
+  ownerBalance = await hre.ethers.provider.getBalance(owner.address);
+  console.log("Contract balance after withdrawal:", hre.ethers.utils.formatEther(contractBalance));
+  console.log("Balance of owner after withdrawal:", hre.ethers.utils.formatEther(ownerBalance));
 }
 
 main()

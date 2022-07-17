@@ -16,6 +16,7 @@ contract Domains is ERC721URIStorage {
     string public tld;
     mapping(string => address) public domains;
     mapping(string => string) public records;
+    address payable public owner;
 
     constructor(string memory _tld)
         payable
@@ -23,6 +24,7 @@ contract Domains is ERC721URIStorage {
     {
         tld = _tld;
         console.log("Deploying the ENS Domains Smart Contract!", tld);
+        owner = payable(msg.sender);
     }
 
     function price(string calldata name) private pure returns (uint256) {
@@ -56,7 +58,9 @@ contract Domains is ERC721URIStorage {
                 '"}'
             )
         );
-        string memory finalTokenUri = string(abi.encodePacked("data:application/json;base64,", json));
+        string memory finalTokenUri = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
         _safeMint(msg.sender, newRecordId);
         _setTokenURI(newRecordId, finalTokenUri);
         domains[name] = msg.sender;
@@ -78,5 +82,20 @@ contract Domains is ERC721URIStorage {
         returns (string memory)
     {
         return records[name];
+    }
+
+    modifier onlyOwner() {
+        require(isOwner());
+        _;
+    }
+
+    function isOwner() public view returns (bool) {
+        return msg.sender == owner;
+    }
+
+    function withdraw() public onlyOwner {
+        uint amount = address(this).balance;
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Failed to withdraw Matic");
     }
 }
