@@ -7,8 +7,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useProvider, useSigner, useContract } from "wagmi";
 import { ContractABI } from "../constants/index";
 
-const tld = ".stacex";
-
 export default function Home() {
   const { isConnected } = useAccount();
   const provider = useProvider();
@@ -59,27 +57,23 @@ export default function Home() {
 
   const renderInputForm = () => {
     return (
-      <div className="form-container">
-        <div className="first-row">
+      <div>
+        <div>
           <input
             type="text"
             value={domain}
-            placeholder="domain"
+            placeholder="domain.stacex"
             onChange={(e) => setDomain(e.target.value)}
           />
-          <p className="tld"> {tld} </p>
         </div>
-
         <input
           type="text"
           value={record}
           placeholder="whats ur ninja power?"
           onChange={(e) => setRecord(e.target.value)}
         />
-
-        <div className="button-container">
-          {/* Call the mintDomain function when the button is clicked*/}
-          <button className="cta-button mint-button" onClick={mintDomain}>
+        <div>
+          <button onClick={mintDomain}>
             Mint
           </button>
         </div>
